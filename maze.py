@@ -2,6 +2,8 @@ import sys
 import math
 
 
+# Class provided by Harvard CS50 lecture series
+# Stores the information of a spot on the map that the agent could occupy
 class Node:
     def __init__(self, state, parent, action, steps):
         self.state = state
@@ -18,7 +20,11 @@ class Node:
     def get_steps_away(self):
         return self.steps
 
-
+    
+# Class provided by Harvard CS50 lecture series
+# Frontier is the list of options that the agent is considering
+# Each option is a spot on the map that the agent must decide to occupy given some information
+# Information varies in how far it is away from the end goal and how many steps it has taken.
 class StackFrontier:
     def __init__(self, goal):
         self.frontier = []
@@ -33,6 +39,11 @@ class StackFrontier:
     def empty(self):
         return len(self.frontier) == 0
 
+    # remove method developed by me from watching lecture series
+    # Tells agent which path to follow
+    # Agent decides to go completely down the first path it finds
+    # Once path is exhausted and agent is not at end goal, agent will move to new path
+    # Also known as Depth-First Search
     def remove(self):
         if self.empty():
             raise Exception("empty frontier")
@@ -41,9 +52,12 @@ class StackFrontier:
             self.frontier = self.frontier[:-1]
             return node
 
-
+        
+# Class implemented by me to override the decision-making function for the agent
 class QueueFrontier(StackFrontier):
 
+    # Agent will consider each path block by block like a wave propagating through the area
+    # Also known as Breadth-First Search
     def remove(self):
         if self.empty():
             raise Exception("empty frontier")
@@ -52,9 +66,14 @@ class QueueFrontier(StackFrontier):
             self.frontier = self.frontier[1:]
             return node
 
-
+        
+# Class implemented by me to override the decision-making function for the agent
 class ManhattanFrontier(StackFrontier):
 
+    # Agent considers only the blocks that have a closer "distance" to the end goal
+    # Distance is calculated very primitively as (xf - xi) + (yf yi)
+    # Where xf and yf are the x and y values,respectively, for the end goal
+    # And xi and yi are the x and y values, respectively, for the considered spot 
     def remove(self):
         if self.empty():
             raise Exception("empty frontier")
@@ -70,9 +89,13 @@ class ManhattanFrontier(StackFrontier):
             self.frontier.remove(node)
             return node
 
-
+        
+# Class implemented by me to override the decision-making function for the agent
 class EulerFrontier(ManhattanFrontier):
 
+    # In comparison to the ManhattanFrontier's remove algorithm,
+    # EulerFrontier's remove algorithm works the same way but uses the proper definition of distance
+    # Calculated as sqrt((xf - xi)^2 + (yf - yi)^2)
     def remove(self):
         if self.empty():
             raise Exception("empty frontier")
@@ -88,9 +111,15 @@ class EulerFrontier(ManhattanFrontier):
             self.frontier.remove(node)
             return node
 
-
+        
+# Class implemented by me to override the decision-making function for the agent
 class EulerStarFrontier(EulerFrontier):
 
+    # The most optimized and intelligent algorithm of all the algorithms explored so far
+    # Includes the proper distance calculation as well as bringing in a new parameter in steps taken
+    # This makes sure the agent finds the shortest path while also making sure it does not
+    # Exhaust too many resources in considering all paths, each spot evaluated has a cost
+    # This models real behavior as well as there is a cost to check if a spot is closer to home or not
     def remove(self):
         if self.empty():
             raise Exception("empty frontier")
@@ -111,7 +140,11 @@ class EulerStarFrontier(EulerFrontier):
             self.frontier.remove(node)
             return node
 
-
+        
+# Class provided by Harvard CS50 lecture series
+# Constructs and implements the working framework for the maze
+# Also reads and prints out a file for which path the agent ended up taking
+# Also displays which paths the AI checked but were not on the decided path
 class Maze:
 
     def __init__(self, filename):
